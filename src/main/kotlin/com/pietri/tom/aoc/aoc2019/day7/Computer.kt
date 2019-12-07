@@ -9,8 +9,8 @@ data class Computer(val instructions: MutableList<Int>,
 
     fun getNextOutput(inputs: Int): Int? {
         buffer.add(inputs)
-        var opCode = getNextOpCode()
-        while (opCode != 99) {
+        do {
+            val opCode = getNextOpCode();
             val firstParamMode = (instructions[position] / 100 % 10)
             val (newPosition, output) = getOutputAndPositionForOpcode(opCode, instructions, position, firstParamMode)
 
@@ -18,9 +18,7 @@ data class Computer(val instructions: MutableList<Int>,
             if (output != null) {
                 return output
             }
-
-            opCode = getNextOpCode();
-        }
+        } while (opCode != 99)
 
         finished = true;
         return null;
