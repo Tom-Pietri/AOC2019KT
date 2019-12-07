@@ -1,7 +1,6 @@
 package com.pietri.tom.aoc.aoc2019.day5
 
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.util.Lists
 import org.junit.jupiter.api.Test
 import java.io.File
 

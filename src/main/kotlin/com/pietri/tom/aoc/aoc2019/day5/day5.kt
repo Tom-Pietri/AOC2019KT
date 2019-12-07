@@ -10,10 +10,9 @@ fun runOpCode(s: String, value: Int): Int {
     var opCode = intcodes[position] % 100;
     while (opCode != 99) {
         val firstParamMode = (intcodes[position] / 100 % 10)
-        when (opCode) {
+        position = when (opCode) {
             1, 2 -> {
                 val secondParamMode = (intcodes[position] / 1000 % 10)
-//                val thirdParamMode = (intcodes[position] / 10000 % 10)
                 val param1 = if (firstParamMode == 0) {
                     intcodes[intcodes[position + 1]]
                 } else {
@@ -34,17 +33,17 @@ fun runOpCode(s: String, value: Int): Int {
 
                 intcodes[intcodes[position + 3]] = result
 
-                position += 4
+                position + 4
             }
             3 -> {
                 val param1 = intcodes[position + 1];
                 intcodes[param1] = value
-                position += 2
+                position + 2
             }
             4 -> {
                 val param1 = intcodes[position + 1];
                 output = intcodes[param1]
-                position += 2
+                position + 2
             }
             5, 6, 7, 8 -> {
                 val secondParamMode = (intcodes[position] / 1000 % 10)
@@ -63,17 +62,16 @@ fun runOpCode(s: String, value: Int): Int {
                 when (opCode) {
                     5 -> {
                         if (param1 != 0) {
-                            position = param2;
+                            param2;
                         } else {
-                            position += 3;
+                            position + 3;
                         }
                     }
                     6 -> {
-
                         if (param1 == 0) {
-                            position = param2;
+                            param2;
                         } else {
-                            position += 3;
+                            position + 3;
                         }
                     }
                     7 -> {
@@ -82,7 +80,7 @@ fun runOpCode(s: String, value: Int): Int {
                         } else {
                             intcodes[intcodes[position + 3]] = 0
                         }
-                        position += 4;
+                        position + 4;
                     }
                     8 -> {
                         if (param1 == param2) {
@@ -90,11 +88,12 @@ fun runOpCode(s: String, value: Int): Int {
                         } else {
                             intcodes[intcodes[position + 3]] = 0
                         }
-
-                        position += 4
+                        position + 4
                     }
+                    else -> -1
                 }
             }
+            else -> -1
         }
         opCode = intcodes[position] % 100
     }
