@@ -6,27 +6,27 @@ data class Computer(val instructions: MutableList<Int>,
                     var finished: Boolean = false,
                     var phaseValueUsed: Boolean = false) {
     private val buffer = mutableListOf(phase)
-    private var currentOutput: Int = 0
 
     fun getNextOutput(inputs: Int): Int? {
         buffer.add(inputs)
-        var opCode = instructions[position] % 100;
-        var outputs = emptyList<Int>().toMutableList()
+        var opCode = getNextOpCode()
         while (opCode != 99) {
             val firstParamMode = (instructions[position] / 100 % 10)
-            val pair = getOutputAndPositionForOpcode(opCode, instructions, position, firstParamMode)
-            position = pair.first
+            val (newPosition, output) = getOutputAndPositionForOpcode(opCode, instructions, position, firstParamMode)
 
-            if (pair.second != null) {
-                return pair.second!!
+            position = newPosition
+            if (output != null) {
+                return output
             }
 
-
-            opCode = instructions[position] % 100
+            opCode = getNextOpCode();
         }
+
         finished = true;
         return null;
     }
+
+    private fun getNextOpCode() = instructions[position] % 100
 
     private fun getOutputAndPositionForOpcode(opCode: Int, intcodes: MutableList<Int>, position: Int, firstParamMode: Int): Pair<Int, Int?> {
         var output: Int? = null
