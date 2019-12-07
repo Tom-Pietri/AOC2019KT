@@ -26,21 +26,14 @@ data class Computer(val instructions: MutableList<Int>,
 
     private fun getNextOpCode() = instructions[position] % 100
 
-    private fun getOutputAndPositionForOpcode(opCode: Int, intcodes: MutableList<Int>, position: Int, firstParamMode: Int): Pair<Int, Int?> {
-        var output: Int? = null
-        val nextPosition = when (opCode) {
-            1, 2 -> addOrMultiply(intcodes, position, firstParamMode, opCode)
-            3 -> writeBufferValue(intcodes, position)
-            4 -> {
-                val pair = readValueForOutput(intcodes, position, output)
-                output = pair.second
-                pair.first
-            }
-            5, 6, 7, 8 -> fiveThroughHeight(intcodes, position, firstParamMode, opCode)
-
-            else -> -1
+    private fun getOutputAndPositionForOpcode(opCode: Int, intcodes: MutableList<Int>, position: Int, firstParamMode: Int): OperationResult {
+        return when (opCode) {
+            1, 2 -> OperationResult(addOrMultiply(intcodes, position, firstParamMode, opCode))
+            3 -> OperationResult(writeBufferValue(intcodes, position))
+            4 -> readOutputValue(intcodes, position)
+            5, 6, 7, 8 -> OperationResult(fiveThroughHeight(intcodes, position, firstParamMode, opCode))
+            else -> OperationResult(-1, null)
         }
-        return Pair(nextPosition, output)
     }
 
     private fun addOrMultiply(intcodes: MutableList<Int>, position: Int, firstParamMode: Int, opCode: Int): Int {
@@ -75,13 +68,11 @@ data class Computer(val instructions: MutableList<Int>,
         return position + 2
     }
 
-    private fun readValueForOutput(intcodes: MutableList<Int>, position: Int, output: Int?): Pair<Int, Int?> {
-        var output1 = output
-        val param1 = intcodes[position + 1];
-        output1 = intcodes[param1]
-        return Pair(position + 2, output1)
+    private fun readOutputValue(intcodes: MutableList<Int>, position: Int): OperationResult {
+        return OperationResult(position + 2, intcodes[intcodes[position + 1]])
     }
 
+    // TODO : Extract indedpendant operations
     private fun fiveThroughHeight(intcodes: MutableList<Int>, position: Int, firstParamMode: Int, opCode: Int): Int {
         val secondParamMode = (intcodes[position] / 1000 % 10)
         val param1 = if (firstParamMode == 0) {
@@ -131,4 +122,5 @@ data class Computer(val instructions: MutableList<Int>,
         }
     }
 
+    data class OperationResult(val position: Int, val value: Int? = null);
 }
