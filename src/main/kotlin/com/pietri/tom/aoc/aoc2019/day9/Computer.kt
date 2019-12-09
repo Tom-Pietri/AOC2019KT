@@ -10,31 +10,28 @@ data class Computer(val instructions: MutableList<BigInteger>) {
     fun getNextOutput(input: Int): BigInteger {
         var finalOutput = BigInteger.valueOf(0)
         do {
-            val opCode = getNextOpCode()
-            val firstParamMode = (instructions[position].toInt() / 100 % 10).toInt()
-            val (newPosition, output) = getOutputAndPositionForOpcode(opCode, instructions, position, firstParamMode, input)
+            val operation = Operation(instructions[position])
+            val (newPosition, output) = getOutputAndPositionForOpcode(operation, instructions, input)
 
             position = newPosition
             if (output != null) {
                 finalOutput = output
             }
-        } while (opCode != 99)
+        } while (operation.opCode != 99)
 
         return finalOutput
     }
 
-    private fun getNextOpCode() = instructions[position].toInt() % 100
-
-    private fun getOutputAndPositionForOpcode(opCode: Int, intcodes: MutableList<BigInteger>, position: Int, firstParamMode: Int, input: Int): OperationResult {
-        return when (opCode) {
-            1, 2 -> OperationResult(addOrMultiply(intcodes, position, firstParamMode, opCode))
-            3 -> OperationResult(writeBufferValue(intcodes, position, input))
-            4 -> readOutputValue(intcodes, position)
-            5, 6, 7, 8 -> OperationResult(fiveThroughHeight(intcodes, position, firstParamMode, opCode))
+    private fun getOutputAndPositionForOpcode(operation: Operation, intcodes: MutableList<BigInteger>, input: Int): OperationResult {
+        return when (operation.opCode) {
+            1, 2 -> OperationResult(addOrMultiply(intcodes, operation))
+            3 -> OperationResult(writeBufferValue(intcodes, input))
+            4 -> readOutputValue(intcodes)
+            5, 6, 7, 8 -> OperationResult(fiveThroughHeight(intcodes, operation))
             9 -> {
-                val param1 = if (firstParamMode == 0) {
+                val param1 = if (operation.firstParamMode == 0) {
                     intcodes[intcodes[position + 1].toInt()]
-                } else if (firstParamMode == 2) {
+                } else if (operation.firstParamMode == 2) {
                     intcodes[relativeBase + intcodes[position + 1].toInt()]
                 } else {
                     intcodes[position + 1]
@@ -47,25 +44,24 @@ data class Computer(val instructions: MutableList<BigInteger>) {
         }
     }
 
-    private fun addOrMultiply(intcodes: MutableList<BigInteger>, position: Int, firstParamMode: Int, opCode: Int): Int {
-        val secondParamMode = (intcodes[position].toInt() / 1000 % 10)
-        val param1 = if (firstParamMode == 0) {
+    private fun addOrMultiply(intcodes: MutableList<BigInteger>, operation: Operation): Int {
+        val param1 = if (operation.firstParamMode == 0) {
             intcodes[intcodes[position + 1].toInt()]
-        } else if (firstParamMode == 2) {
+        } else if (operation.firstParamMode == 2) {
             intcodes[relativeBase + intcodes[position + 1].toInt()]
         } else {
             intcodes[position + 1]
         }
 
-        val param2 = if (secondParamMode == 0) {
+        val param2 = if (operation.secondParamMode == 0) {
             intcodes[intcodes[position + 2].toInt()]
-        } else if (secondParamMode == 2) {
+        } else if (operation.secondParamMode == 2) {
             intcodes[relativeBase + intcodes[position + 2].toInt()]
         } else {
             intcodes[position + 2]
         }
 
-        val result = if (opCode == 1) {
+        val result = if (operation.opCode == 1) {
             param1 + param2
         } else {
             param1 * param2
@@ -76,23 +72,23 @@ data class Computer(val instructions: MutableList<BigInteger>) {
         return position + 4
     }
 
-    private fun writeBufferValue(intcodes: MutableList<BigInteger>, position: Int, input: Int): Int {
+    private fun writeBufferValue(intcodes: MutableList<BigInteger>, input: Int): Int {
         val param1 = intcodes[position + 1].toInt()
         intcodes[param1] = input.toBigInteger()
 
         return position + 2
     }
 
-    private fun readOutputValue(intcodes: MutableList<BigInteger>, position: Int): OperationResult {
+    private fun readOutputValue(intcodes: MutableList<BigInteger>): OperationResult {
         return OperationResult(position + 2, intcodes[intcodes[position + 1].toInt()])
     }
 
     // TODO : Extract indedpendant operations
-    private fun fiveThroughHeight(intcodes: MutableList<BigInteger>, position: Int, firstParamMode: Int, opCode: Int): Int {
+    private fun fiveThroughHeight(intcodes: MutableList<BigInteger>, operation: Operation): Int {
         val secondParamMode = (intcodes[position].toInt() / 1000 % 10)
-        val param1 = if (firstParamMode == 0) {
+        val param1 = if (operation.firstParamMode == 0) {
             intcodes[intcodes[position + 1].toInt()]
-        } else if (firstParamMode == 2) {
+        } else if (operation.firstParamMode == 2) {
             intcodes[relativeBase + intcodes[position + 1].toInt()]
         } else {
             intcodes[position + 1]
@@ -106,7 +102,7 @@ data class Computer(val instructions: MutableList<BigInteger>) {
             intcodes[position + 2]
         }
 
-        return when (opCode) {
+        return when (operation.opCode) {
             5 -> {
                 if (param1 == BigInteger.ZERO) {
                     param2.toInt()
@@ -142,4 +138,10 @@ data class Computer(val instructions: MutableList<BigInteger>) {
     }
 
     data class OperationResult(val position: Int, val value: BigInteger? = null)
+
+    class Operation(val operation: BigInteger) {
+        val opCode = operation.toInt() % 100
+        val firstParamMode = operation.toInt() / 100 % 10
+        val secondParamMode = operation.toInt() / 1000 % 10
+    }
 }
