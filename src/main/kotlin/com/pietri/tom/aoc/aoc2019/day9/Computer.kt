@@ -10,56 +10,55 @@ data class Computer(val instructions: MutableList<BigInteger>) {
     fun getNextOutput(input: Int): BigInteger {
         var finalOutput = BigInteger.valueOf(0)
         do {
-            val operation = Operation(instructions[position])
-            val (newPosition, output) = getOutputAndPositionForOpcode(operation, instructions, input)
+            val operation = Operation(getValueAtPosition(position))
+            val (newPosition, output) = getOutputAndPositionForOpcode(operation, input)
 
-            position = newPosition
             if (output != null) {
+                println(output)
                 finalOutput = output
             }
+            position = newPosition
+
         } while (operation.opCode != 99)
 
         return finalOutput
     }
 
-    private fun getOutputAndPositionForOpcode(operation: Operation, intcodes: MutableList<BigInteger>, input: Int): OperationResult {
-        return when (operation.opCode) {
-            1, 2 -> OperationResult(addOrMultiply(intcodes, operation))
-            3 -> OperationResult(writeBufferValue(intcodes, input))
-            4 -> readOutputValue(intcodes)
-            5, 6, 7, 8 -> OperationResult(fiveThroughHeight(intcodes, operation))
-            9 -> {
-                val param1 = if (operation.firstParamMode == 0) {
-                    intcodes[intcodes[position + 1].toInt()]
-                } else if (operation.firstParamMode == 2) {
-                    intcodes[relativeBase + intcodes[position + 1].toInt()]
-                } else {
-                    intcodes[position + 1]
-                }
+    private fun getValueAtPosition(position: Int): BigInteger {
+        while (instructions.size - 1 < position) {
+            instructions.add(BigInteger.ZERO);
+        }
 
-                relativeBase = param1.toInt()
-                return OperationResult(position + 2)
+        return instructions[position]
+    }
+
+    private fun setValueAtPosition(position: Int, value: BigInteger) {
+        while (instructions.size - 1 < position) {
+            instructions.add(BigInteger.ZERO);
+        }
+
+        instructions[position] = value
+    }
+
+    private fun getOutputAndPositionForOpcode(operation: Operation, input: Int): OperationResult {
+        return when (operation.opCode) {
+            1, 2 -> OperationResult(addOrMultiply(operation))
+            3 -> OperationResult(writeBufferValue(input, operation))
+            4 -> readOutputValue(operation)
+            5, 6, 7, 8 -> OperationResult(fiveThroughHeight(operation))
+            9 -> {
+                return updateRelativeBase(operation)
             }
             else -> OperationResult(-1, null)
         }
     }
 
-    private fun addOrMultiply(intcodes: MutableList<BigInteger>, operation: Operation): Int {
-        val param1 = if (operation.firstParamMode == 0) {
-            intcodes[intcodes[position + 1].toInt()]
-        } else if (operation.firstParamMode == 2) {
-            intcodes[relativeBase + intcodes[position + 1].toInt()]
-        } else {
-            intcodes[position + 1]
-        }
+    private fun addOrMultiply(operation: Operation): Int {
+        val param1Address = getFirstParamAddres(operation.firstParamMode)
+        val param1 = getValueAtPosition(param1Address)
 
-        val param2 = if (operation.secondParamMode == 0) {
-            intcodes[intcodes[position + 2].toInt()]
-        } else if (operation.secondParamMode == 2) {
-            intcodes[relativeBase + intcodes[position + 2].toInt()]
-        } else {
-            intcodes[position + 2]
-        }
+        val param2Address = getSecondParamAddres(operation.secondParamMode);
+        val param2 = getValueAtPosition(param2Address)
 
         val result = if (operation.opCode == 1) {
             param1 + param2
@@ -67,81 +66,117 @@ data class Computer(val instructions: MutableList<BigInteger>) {
             param1 * param2
         }
 
-        intcodes[intcodes[position + 3].toInt()] = result
+        val param3Addr = getThirdParamAddres(operation.thirdParamMode)
+        setValueAtPosition(param3Addr, result)
 
         return position + 4
     }
 
-    private fun writeBufferValue(intcodes: MutableList<BigInteger>, input: Int): Int {
-        val param1 = intcodes[position + 1].toInt()
-        intcodes[param1] = input.toBigInteger()
+    private fun writeBufferValue(input: Int, operation: Operation): Int {
+        val param1Addr = getFirstParamAddres(operation.firstParamMode)
+        setValueAtPosition(param1Addr, input.toBigInteger())
 
         return position + 2
     }
 
-    private fun readOutputValue(intcodes: MutableList<BigInteger>): OperationResult {
-        return OperationResult(position + 2, intcodes[intcodes[position + 1].toInt()])
+    private fun readOutputValue(operation: Operation): OperationResult {
+        val param1Address = getFirstParamAddres(operation.firstParamMode)
+        val param1 = getValueAtPosition(param1Address)
+
+        return OperationResult(position + 2, param1)
     }
 
     // TODO : Extract indedpendant operations
-    private fun fiveThroughHeight(intcodes: MutableList<BigInteger>, operation: Operation): Int {
-        val secondParamMode = (intcodes[position].toInt() / 1000 % 10)
-        val param1 = if (operation.firstParamMode == 0) {
-            intcodes[intcodes[position + 1].toInt()]
-        } else if (operation.firstParamMode == 2) {
-            intcodes[relativeBase + intcodes[position + 1].toInt()]
-        } else {
-            intcodes[position + 1]
-        }
+    private fun fiveThroughHeight(operation: Operation): Int {
 
-        val param2 = if (secondParamMode == 0) {
-            intcodes[intcodes[position + 2].toInt()]
-        } else if (secondParamMode == 2) {
-            intcodes[relativeBase + intcodes[position + 2].toInt()]
-        } else {
-            intcodes[position + 2]
-        }
+        val param1Address = getFirstParamAddres(operation.firstParamMode)
+        val param1 = getValueAtPosition(param1Address)
+
+        val param2Address = getSecondParamAddres(operation.secondParamMode);
+        val param2 = getValueAtPosition(param2Address)
+
+        val thirdParamAddres = getThirdParamAddres(operation.thirdParamMode)
 
         return when (operation.opCode) {
             5 -> {
-                if (param1 == BigInteger.ZERO) {
+                if (param1 != BigInteger.ZERO) {
                     param2.toInt()
                 } else {
                     position + 3;
                 }
             }
             6 -> {
-                if (param1 != BigInteger.ZERO) {
+                if (param1 == BigInteger.ZERO) {
                     param2.toInt();
                 } else {
                     position + 3;
                 }
             }
             7 -> {
-                if (param1 < param2) {
-                    intcodes[intcodes[position + 3].toInt()] = BigInteger.ONE
+                val valueToSet = if (param1 < param2) {
+                    BigInteger.ONE
                 } else {
-                    intcodes[intcodes[position + 3].toInt()] = BigInteger.ZERO
+                    BigInteger.ZERO
                 }
+                setValueAtPosition(thirdParamAddres, valueToSet)
+
                 position + 4;
             }
             8 -> {
-                if (param1 == param2) {
-                    intcodes[intcodes[position + 3].toInt()] = BigInteger.ONE
-                } else {
-                    intcodes[intcodes[position + 3].toInt()] = BigInteger.ZERO
-                }
+                val valueToSet =
+                        if (param1 == param2) {
+                            BigInteger.ONE
+                        } else {
+                            BigInteger.ZERO
+                        }
+                setValueAtPosition(thirdParamAddres, valueToSet)
                 position + 4
             }
             else -> -1
         }
     }
 
+    private fun updateRelativeBase(operation: Operation): OperationResult {
+        val firstParamAddres = getFirstParamAddres(operation.firstParamMode)
+        val param1 = getValueAtPosition(firstParamAddres)
+
+        relativeBase += param1.toInt()
+        return OperationResult(position + 2)
+    }
+
     data class OperationResult(val position: Int, val value: BigInteger? = null)
 
-    class Operation(val operation: BigInteger) {
+    fun getFirstParamAddres(firstParamMode: Int): Int {
+        return when (firstParamMode) {
+            0 -> getValueAtPosition(position + 1).toInt()
+            1 -> position + 1
+            2 -> relativeBase + getValueAtPosition(position + 1).toInt()
+            else -> -1
+        }
+    }
+
+    fun getSecondParamAddres(secondParamMode: Int): Int {
+        return when (secondParamMode) {
+            0 -> getValueAtPosition(position + 2).toInt()
+            1 -> position + 2
+            2 -> relativeBase + getValueAtPosition(position + 2).toInt()
+            else -> -1
+        }
+    }
+
+    fun getThirdParamAddres(thirdParamMode: Int): Int {
+        return when (thirdParamMode) {
+            0 -> getValueAtPosition(position + 3).toInt()
+            1 -> position + 3
+            2 -> relativeBase + getValueAtPosition(position + 3).toInt()
+            else -> -1
+        }
+    }
+
+    class Operation(private val operation: BigInteger) {
         val opCode = operation.toInt() % 100
         val firstParamMode = operation.toInt() / 100 % 10
         val secondParamMode = operation.toInt() / 1000 % 10
+        val thirdParamMode = operation.toInt() / 10000 % 10
     }
 }
