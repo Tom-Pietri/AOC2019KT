@@ -24,8 +24,6 @@ internal class Day11KtTest {
                 "██  █ █  █ ████ ████ █  █  ██  █  █ ███  ██"))
         //KRZEAJHB
     }
-
-
 }
 
 
