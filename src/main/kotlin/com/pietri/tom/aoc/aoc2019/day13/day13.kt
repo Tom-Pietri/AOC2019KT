@@ -1,5 +1,6 @@
 package com.pietri.tom.aoc.aoc2019.day13
 
+import java.math.BigInteger
 
 
 fun computeFirstSolution(input: String): Int {
@@ -13,8 +14,25 @@ fun computeFirstSolution(input: String): Int {
         }
     } while (nextOutputs != null)
 
-
     return board.filter { it.tileId == TileType.BLOCK.id }.size
+}
+
+fun computeSecondSolution(input: String): Int {
+    val computerInstructions = input.split(",").map { it.toBigInteger() }.toMutableList()
+    computerInstructions[0] = BigInteger.valueOf(2)
+    val computer = Computer(computerInstructions)
+    var score = 0
+    do {
+        val nextOutputs = computer.getNexOutputs(0, 3)
+        if (nextOutputs != null) {
+            val (x, y, tileId) = nextOutputs
+            if (x == -1) {
+                score = tileId
+            }
+        }
+    } while (nextOutputs != null)
+
+    return score
 }
 
 data class Tile(val position: Point2D, val tileId: Int);
@@ -26,5 +44,5 @@ enum class TileType(val id: Int) {
     WALL(1),
     BLOCK(2),
     PADDLE(3),
-    BALLS(4)
+    BALL(4)
 }
