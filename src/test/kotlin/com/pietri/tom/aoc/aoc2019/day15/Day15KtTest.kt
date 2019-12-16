@@ -28,8 +28,14 @@ internal class Day15KtTest {
     }
 
     @Test
-    fun `Part 1 my input should get 0`() {
+    fun `Part 1 my input should get 304`() {
         val input = File("./src/main/kotlin/com/pietri/tom/aoc/aoc2019/day15/day15.input").readLines(Charsets.UTF_8).get(0)
         assertThat(computeFirstSolution(input)).isEqualTo(304)
+    }
+
+    @Test
+    fun `Part 2 my input should get 310`() {
+        val input = File("./src/main/kotlin/com/pietri/tom/aoc/aoc2019/day15/day15.input").readLines(Charsets.UTF_8).get(0)
+        assertThat(computeSecondSolution(input)).isEqualTo(310)
     }
 }
