@@ -1,5 +1,6 @@
 package com.pietri.tom.aoc.aoc2019.day16
 
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.floor
 
@@ -11,9 +12,11 @@ fun computeFirstSolution(input: String): String {
 
 fun computeSecondSolution(input: String): String {
     val signal = toListOfInt(input)
-    val realSignal = toListOfInt(input).toMutableList()
-    repeat(10000) {realSignal.addAll(signal)}
-    return resultAfterPhases(realSignal).joinToString("")
+    val offSet = signal.subList(0, 7).joinToString("").toInt()
+    var realSignal = toListOfInt(input).toMutableList()
+    repeat(9999) {realSignal.addAll(signal)}
+    realSignal = realSignal.subList(offSet, realSignal.size)
+    return resultAfterPhases2(realSignal).subList(0, 8).joinToString("")
 }
 
 fun toListOfInt(input: String): List<Int> {
@@ -25,9 +28,16 @@ fun toListOfInt(input: String): List<Int> {
 fun resultAfterPhases(signal: List<Int>): List<Int> {
     var currentSignal = signal
     repeat(100) {
-        println(currentSignal.joinToString(""))
         currentSignal = nextPhase(currentSignal) }
 //    return currentSignal.subList(0, 8).joinToString("")
+    return currentSignal
+}
+
+fun resultAfterPhases2(signal: List<Int>): List<Int> {
+    var currentSignal = signal
+    repeat(100) {
+        currentSignal = nextPhase2(currentSignal)
+    }
     return currentSignal
 }
 
@@ -41,6 +51,17 @@ fun nextPhase(signal: List<Int>): List<Int> {
     }
 
     return nextPhase
+}
+
+fun nextPhase2(signal: List<Int>): List<Int> {
+    val nextValues = MutableList(signal.size) { 0 }
+    val lastIndex = signal.size - 1
+    nextValues[lastIndex] = signal[lastIndex]
+    for (i in 1 until signal.size) {
+        nextValues[lastIndex - i] = signal[lastIndex - i] + nextValues[signal.size - i]
+    }
+
+    return nextValues.map { it % 10 }
 }
 
 private fun i(signalValue: Int, basePattern: List<Int>, index: Int, i: Int): Int {

@@ -55,8 +55,26 @@ internal class Day16KtTest {
     }
 
     @Test
+    fun `Part 2 example 1 solution should be 84462026`() {
+        val input = "03036732577212944063491565474664"
+        assertThat(computeSecondSolution(input)).isEqualTo("84462026")
+    }
+
+    @Test
+    fun `Part 2 example 2 solution should be 84462026`() {
+        val input = "02935109699940807407585447034323"
+        assertThat(computeSecondSolution(input)).isEqualTo("78725270")
+    }
+
+    @Test
+    fun `Part 2 example 2 solution should be 53553731`() {
+        val input = "03081770884921959731165446850517"
+        assertThat(computeSecondSolution(input)).isEqualTo("53553731")
+    }
+
+    @Test
     fun `Part 2 solution should be ?`() {
         val input = File("./src/main/kotlin/com/pietri/tom/aoc/aoc2019/day16/day16.input").readLines(Charsets.UTF_8).get(0)
-        assertThat(computeSecondSolution(input)).isEqualTo("?")
+        assertThat(computeSecondSolution(input)).isEqualTo("52541026")
     }
 }
