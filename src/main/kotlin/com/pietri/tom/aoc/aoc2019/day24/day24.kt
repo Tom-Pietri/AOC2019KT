@@ -1,6 +1,7 @@
 package com.pietri.tom.aoc.aoc2019.day24
 
 import java.lang.IllegalArgumentException
+import kotlin.math.pow
 
 
 class BugGrid(val grid : List<List<Tile>>) {
@@ -60,6 +61,19 @@ class BugGrid(val grid : List<List<Tile>>) {
         if (j + 1 < grid[i].size && grid[i][j + 1] == Tile.BUG)
             adjacentBugs++
         return adjacentBugs
+    }
+
+    fun biodiversityRating(): Double {
+        var result = 0.0
+        for (i in 0 until grid.size) {
+            for (j in 0 until grid[i].size) {
+                if (grid[i][j] == Tile.BUG) {
+                    result += 2.0.pow((i*grid.size)+j)
+                }
+            }
+        }
+
+        return result
     }
 }
 

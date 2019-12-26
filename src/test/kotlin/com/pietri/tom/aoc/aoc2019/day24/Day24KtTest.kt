@@ -47,6 +47,19 @@ internal class Day24KtTest {
         assertThat(bugGrid.nextGrid().grid).isEqualTo(expectedNextStep)
     }
 
+    @Test
+    fun `Empty grid biodiversity rating should be 0`() {
+        val stringRepresentation = listOf("")
+        val bugGrid = BugGrid.fromStringRepresentation(stringRepresentation)
+        assertThat(bugGrid.biodiversityRating()).isEqualTo(0.0)
+    }
+
+    @ParameterizedTest
+    @MethodSource("biodiversityTests")
+    fun `Grid biodiversity rating`(stringRepresentation: List<String>, expectedRating: Double) {
+        val bugGrid = BugGrid.fromStringRepresentation(stringRepresentation)
+        assertThat(bugGrid.biodiversityRating()).isEqualTo(expectedRating)
+    }
 
     //    @Test
     fun firstSolution() {
@@ -83,6 +96,22 @@ internal class Day24KtTest {
                                         "###.#",
                                         "##.##",
                                         ".##..")).grid)
+        )
+
+        @JvmStatic
+        fun biodiversityTests() = listOf(
+                Arguments.of(listOf(""), 0.0),
+                Arguments.of(listOf("..", ".."), 0.0),
+                Arguments.of(listOf("#.", ".."), 1.0),
+                Arguments.of(listOf(".#", ".."), 2.0),
+                Arguments.of(listOf("##", ".."), 3.0),
+                Arguments.of(listOf("##", "##"), 15.0),
+                Arguments.of(
+                        listOf(".....",
+                                ".....",
+                                ".....",
+                                "#....",
+                                ".#..."), 2129920.0)
         )
     }
 }
