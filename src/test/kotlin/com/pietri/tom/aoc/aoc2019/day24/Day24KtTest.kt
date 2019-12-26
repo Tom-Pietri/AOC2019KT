@@ -61,10 +61,10 @@ internal class Day24KtTest {
         assertThat(bugGrid.biodiversityRating()).isEqualTo(expectedRating)
     }
 
-    //    @Test
-    fun firstSolution() {
-        val inputGrid = File("./src/main/kotlin/com/pietri/tom/aoc/aoc2019/day21/day21.input").readLines(Charsets.UTF_8)
-        assert(false)
+    @Test
+    fun `First part solution should be 12129040`() {
+        val stringRepresentation = File("./src/main/kotlin/com/pietri/tom/aoc/aoc2019/day24/day24.input").readLines(Charsets.UTF_8)
+        assertThat(computeFirstSolution(stringRepresentation)).isEqualTo(12129040)
     }
 
     companion object {

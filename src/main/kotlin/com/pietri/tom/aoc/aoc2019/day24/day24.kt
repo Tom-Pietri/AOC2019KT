@@ -4,6 +4,19 @@ import java.lang.IllegalArgumentException
 import kotlin.math.pow
 
 
+fun computeFirstSolution(stringRepresentation: List<String>): Int {
+    var bugGrid = BugGrid.fromStringRepresentation(stringRepresentation)
+    var biodiversityRating = bugGrid.biodiversityRating()
+    val bugGrids = mutableSetOf<Double>()
+    do {
+        bugGrids.add(biodiversityRating)
+        bugGrid = bugGrid.nextGrid()
+        biodiversityRating = bugGrid.biodiversityRating()
+    } while (!bugGrids.contains(biodiversityRating))
+
+    return bugGrid.biodiversityRating().toInt()
+}
+
 class BugGrid(val grid : List<List<Tile>>) {
 
     companion object {
