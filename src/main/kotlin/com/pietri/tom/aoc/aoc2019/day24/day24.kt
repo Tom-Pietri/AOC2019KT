@@ -19,6 +19,48 @@ class BugGrid(val grid : List<List<Tile>>) {
             return BugGrid(tileGrid)
         }
     }
+
+    fun nextGrid(): BugGrid {
+
+        val nextGrid = mutableListOf<MutableList<Tile>>()
+        for (i in 0 until grid.size) {
+            val curentLine = MutableList(grid[i].size) { Tile.EMPTY }
+            for (j in 0 until grid[i].size) {
+                val adjacentBugs = adjacentBugAt(i, j)
+                curentLine[j] = when (grid[i][j]) {
+                    Tile.BUG -> {
+                        if (adjacentBugs == 1) {
+                            Tile.BUG
+                        } else {
+                            Tile.EMPTY
+                        }
+                    }
+                    Tile.EMPTY -> {
+                        if (adjacentBugs == 2 || adjacentBugs == 1) {
+                            Tile.BUG
+                        } else {
+                            Tile.EMPTY
+                        }
+                    }
+                }
+            }
+            nextGrid.add(curentLine)
+        }
+        return BugGrid(nextGrid)
+    }
+
+    private fun adjacentBugAt(i: Int, j: Int): Int {
+        var adjacentBugs = 0
+        if (i - 1 >= 0 && grid[i - 1][j] == Tile.BUG)
+            adjacentBugs++
+        if (i + 1 < grid.size && grid[i + 1][j] == Tile.BUG)
+            adjacentBugs++
+        if (j - 1 >= 0 && grid[i][j - 1] == Tile.BUG)
+            adjacentBugs++
+        if (j + 1 < grid[i].size && grid[i][j + 1] == Tile.BUG)
+            adjacentBugs++
+        return adjacentBugs
+    }
 }
 
 enum class Tile {

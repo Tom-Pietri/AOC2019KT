@@ -32,12 +32,21 @@ internal class Day24KtTest {
     }
 
     @ParameterizedTest
-    @MethodSource("bugGrid")
+    @MethodSource("stringRepresentationTests")
     fun `Bird grid made from a string representation is good`(stringRepresentation: List<String>,
                                                               expectedTileGrid: List<List<Tile>>) {
         val bugGrid = BugGrid.fromStringRepresentation((stringRepresentation))
         assertThat(bugGrid.grid).isEqualTo(expectedTileGrid)
     }
+
+    @ParameterizedTest
+    @MethodSource("nextStepTests")
+    fun `Bird grid next step works`(stringRepresentation: List<String>,
+                                    expectedNextStep: List<List<Tile>>) {
+        val bugGrid = BugGrid.fromStringRepresentation(stringRepresentation)
+        assertThat(bugGrid.nextGrid().grid).isEqualTo(expectedNextStep)
+    }
+
 
     //    @Test
     fun firstSolution() {
@@ -47,11 +56,33 @@ internal class Day24KtTest {
 
     companion object {
         @JvmStatic
-        fun bugGrid() = listOf(
+        fun stringRepresentationTests() = listOf(
                 Arguments.of(listOf(""), listOf(listOf<Tile>())),
                 Arguments.of(listOf("#.",".#"), listOf(listOf(Tile.BUG, Tile.EMPTY),listOf(Tile.EMPTY, Tile.BUG))),
                 Arguments.of(listOf("##","##"), listOf(listOf(Tile.BUG, Tile.BUG),listOf(Tile.BUG, Tile.BUG))),
                 Arguments.of(listOf("#.#",".##"), listOf(listOf(Tile.BUG, Tile.EMPTY, Tile.BUG),listOf(Tile.EMPTY, Tile.BUG, Tile.BUG)))
+        )
+
+        @JvmStatic
+        fun nextStepTests() = listOf(
+                Arguments.of(listOf(""), listOf(listOf<Tile>())),
+                Arguments.of(listOf("..", ".."), listOf(listOf(Tile.EMPTY, Tile.EMPTY), listOf(Tile.EMPTY, Tile.EMPTY))),
+                Arguments.of(listOf("#.", ".#"), listOf(listOf(Tile.EMPTY, Tile.BUG), listOf(Tile.BUG, Tile.EMPTY))),
+                Arguments.of(listOf(
+                        "#.#",
+                        ".##"), listOf(listOf(Tile.EMPTY, Tile.EMPTY, Tile.BUG),
+                        listOf(Tile.BUG, Tile.BUG, Tile.EMPTY))),
+                Arguments.of(listOf("....#",
+                        "#..#.",
+                        "#..##",
+                        "..#..",
+                        "#...."),
+                        BugGrid.fromStringRepresentation(
+                                listOf("#..#.",
+                                        "####.",
+                                        "###.#",
+                                        "##.##",
+                                        ".##..")).grid)
         )
     }
 }
