@@ -9,10 +9,10 @@ fun computeFirstSolution(input: String): Int {
         if (nexOutput != null) {
             when (nexOutput) {
                 35 -> {
-                    line.add('#')
+                    line.add('.')
                 }
                 46 -> {
-                    line.add('.')
+                    line.add('#')
                 }
                 10 -> {
                     if (line.isNotEmpty()) {
